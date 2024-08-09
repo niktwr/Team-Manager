@@ -43,13 +43,13 @@ function App() {
   const handleGeneratePDF = () => {
     const doc = new jsPDF();
     teams.forEach((team, index) => {
-      doc.text(`Team ${index + 1}`, 10, 10 + (index * 60));
-      doc.text('Developers:', 10, 20 + (index * 60));
+      doc.text(`Team ${index + 1}`, 10, 10 + (index * 70));
+      doc.text('Developers:', 10, 20 + (index * 70));
       team.devs.forEach((dev, i) => {
-        doc.text(`${i + 1}. ${dev.Name} (${dev.Role})`, 10, 30 + (index * 60) + (i * 10));
+        doc.text(`${i + 1}. ${dev.Name} (${dev.Role})`, 10, 30 + (index * 70) + (i * 10));
       });
-      doc.text(`Business Analyst: ${team.ba.Name} (${team.ba.Role})`, 10, 60 + (index * 60));
-      doc.text(`Data Analyst: ${team.da.Name} (${team.da.Role})`, 10, 70 + (index * 60));
+      doc.text(`Business Analyst: ${team.ba.Name} (${team.ba.Role})`, 10, 60 + (index * 70));
+      doc.text(`Data Analyst: ${team.da.Name} (${team.da.Role})`, 10, 70 + (index * 70));
     });
 
     doc.save('teams.pdf');
@@ -82,6 +82,7 @@ function App() {
             <p>{team.da.Name} ({team.da.Role})</p>
           </div>
         </div>
+    
       ))}
     </div>
   );
