@@ -13,15 +13,21 @@ function App() {
     reader.onload = (e) => {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-      const devs = XLSX.utils.sheet_to_json(workbook.Sheets['Dev']);
-      const bas = XLSX.utils.sheet_to_json(workbook.Sheets['BA']);
-      const das = XLSX.utils.sheet_to_json(workbook.Sheets['DA']);
+      const sheet = XLSX.utils.sheet_to_json(workbook.Sheets['Sheet1']);
       
+      const { devs, bas, das } = parseData(sheet);
       const generatedTeams = generateTeams(devs, bas, das);
       setTeams(generatedTeams);
     };
 
     reader.readAsArrayBuffer(file);
+  };
+
+  const parseData = (sheet) => {
+    const devs = sheet.map(row => ({ Name: row['Developers'], Role: 'Developer' })).filter(dev => dev.Name);
+    const bas = sheet.map(row => ({ Name: row['Business Analysts'], Role: 'Business Analyst' })).filter(ba => ba.Name);
+    const das = sheet.map(row => ({ Name: row['Data Analysts'], Role: 'Data Analyst' })).filter(da => da.Name);
+    return { devs, bas, das };
   };
 
   const generateTeams = (devs, bas, das) => {
@@ -42,14 +48,31 @@ function App() {
 
   const handleGeneratePDF = () => {
     const doc = new jsPDF();
+    let yOffset = 10; // Starting Y position
+
     teams.forEach((team, index) => {
-      doc.text(`Team ${index + 1}`, 10, 10 + (index * 70));
-      doc.text('Developers:', 10, 20 + (index * 70));
+      doc.text(`Team ${index + 1}`, 10, yOffset);
+      yOffset += 10; // Add space for the team name
+
+      doc.text('Developers:', 10, yOffset);
+      yOffset += 10; // Add space for the "Developers" label
+
       team.devs.forEach((dev, i) => {
-        doc.text(`${i + 1}. ${dev.Name} (${dev.Role})`, 10, 30 + (index * 70) + (i * 10));
+        doc.text(`${i + 1}. ${dev.Name} (${dev.Role})`, 10, yOffset);
+        yOffset += 10; // Add space for each developer
       });
-      doc.text(`Business Analyst: ${team.ba.Name} (${team.ba.Role})`, 10, 60 + (index * 70));
-      doc.text(`Data Analyst: ${team.da.Name} (${team.da.Role})`, 10, 70 + (index * 70));
+
+      doc.text(`Business Analyst: ${team.ba.Name} (${team.ba.Role})`, 10, yOffset);
+      yOffset += 10; // Add space for the Business Analyst
+
+      doc.text(`Data Analyst: ${team.da.Name} (${team.da.Role})`, 10, yOffset);
+      yOffset += 20; // Add space for the Data Analyst and extra space before the next team
+
+      // Add a page break if needed (if yOffset is near the bottom of the page)
+      if (yOffset > 270) { 
+        doc.addPage();
+        yOffset = 10; // Reset Y position for the new page
+      }
     });
 
     doc.save('teams.pdf');
@@ -82,7 +105,6 @@ function App() {
             <p>{team.da.Name} ({team.da.Role})</p>
           </div>
         </div>
-    
       ))}
     </div>
   );
